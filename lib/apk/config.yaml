@@ -1,0 +1,7 @@
+services:
+  - name: firebase::Firebase
+    registration-class: org.domokit.firebase.FirebaseImpl
+jars:
+  - http://localhost:8000/firebase/firebase_lib.dex.jar
+  - http://localhost:8000/firebase/interfaces_java.dex.jar
+  - https://cdn.firebase.com/java/firebase-client-android-2.4.1.jar
