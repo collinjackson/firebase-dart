@@ -2,7 +2,7 @@ library firebase.js.snapshot;
 
 import 'dart:convert';
 
-import 'package:sky_services/firebase/firebase.mojom.dart' as mojo;
+import 'package:sky_services/firebase/firebase.mojom.dart' as mojom;
 
 import '../data_snapshot.dart';
 
@@ -17,16 +17,16 @@ import '../firebase.dart';
  * can traverse into the snapshot by calling child() to return child
  * snapshots (which you could in turn call val() on).
  */
-class MojoDataSnapshot implements DataSnapshot {
+class FlutterDataSnapshot implements DataSnapshot {
   /**
    * Holds a reference to the Mojo 'DataSnapshot' object.
    */
-  final mojo.DataSnapshot _ds;
+  final mojom.DataSnapshot _ds;
 
   /**
    * Construct a new MojoDataSnapshot from a mojo DataSnapshot.
    */
-  MojoDataSnapshot.fromMojoObject(mojo.DataSnapshot obj) : _ds = obj;
+  FlutterDataSnapshot.fromMojoObject(mojom.DataSnapshot obj) : _ds = obj;
 
   bool get exists => true;
 

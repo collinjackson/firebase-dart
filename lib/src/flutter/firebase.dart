@@ -1,10 +1,10 @@
-library firebase.mojo.firebase;
+library firebase.flutter.firebase;
 
 import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter/services.dart';
-import 'package:sky_services/firebase/firebase.mojom.dart' as mojo;
+import 'package:sky_services/firebase/firebase.mojom.dart' as mojom;
 
 import '../firebase.dart';
 import '../disconnect.dart';
@@ -18,10 +18,10 @@ import 'data_snapshot.dart';
 Firebase createFirebase(String url) => new FlutterFirebase(url);
 final serverValue = null;
 
-class FlutterFirebase extends MojoQuery implements Firebase {
+class FlutterFirebase extends FlutterQuery implements Firebase {
   FlutterFirebase(String url) : _path = <String>[], super(url);
 
-  FlutterFirebase._withProxy(mojo.FirebaseProxy firebase, this._path)
+  FlutterFirebase._withProxy(mojom.FirebaseProxy firebase, this._path)
     : super._withProxy(firebase);
 
   // We have to keep track of our full path because we might be asked to provide
@@ -105,25 +105,25 @@ class FlutterFirebase extends MojoQuery implements Firebase {
   }
 
   Firebase child(String path) {
-    mojo.FirebaseProxy proxy = new mojo.FirebaseProxy.unbound();
+    mojom.FirebaseProxy proxy = new mojom.FirebaseProxy.unbound();
     _firebase.ptr.getChild(path, proxy);
-    return new MojoFirebase._withProxy(
+    return new FlutterFirebase._withProxy(
       proxy,
       new List<String>.from(_path)..addAll(path.split("/"))
     );
   }
 
   Firebase parent() {
-    mojo.FirebaseProxy proxy = new mojo.FirebaseProxy.unbound();
+    mojom.FirebaseProxy proxy = new mojom.FirebaseProxy.unbound();
     _firebase.ptr.getParent(proxy);
-    return new MojoFirebase._withProxy(
+    return new FlutterFirebase._withProxy(
       proxy,
       new List<String>.from(_path)..removeLast()
     );
   }
 
   Firebase root() {
-    mojo.FirebaseProxy proxy = new mojo.FirebaseProxy.unbound();
+    mojom.FirebaseProxy proxy = new mojom.FirebaseProxy.unbound();
     _firebase.ptr.getRoot(proxy);
     return new FlutterFirebase._withProxy(proxy, <String>[]);
   }
@@ -149,14 +149,14 @@ class FlutterFirebase extends MojoQuery implements Firebase {
   }
 
   Firebase push({value, onComplete}) {
-    mojo.FirebaseProxy proxy = new mojo.FirebaseProxy.unbound();
+    mojom.FirebaseProxy proxy = new mojom.FirebaseProxy.unbound();
     FlutterFirebase child = new FlutterFirebase._withProxy(proxy, null);
     Future<String> getKey = _firebase.ptr.push(proxy);
-    Future<mojo.Error> setValue = child.set(value);
+    Future<mojom.Error> setValue = child.set(value);
     Future.wait([getKey, setValue])
       .then((List responses) {
-        mojo.FirebasePushResponseParams response = responses[0];
-        mojo.Error error = responses[1];
+        mojom.FirebasePushResponseParams response = responses[0];
+        mojom.Error error = responses[1];
         child._path = new List<String>.from(_path)..add(response.key);
         if (onComplete != null)
           onComplete(error);
@@ -188,7 +188,7 @@ class FlutterFirebase extends MojoQuery implements Firebase {
     Completer completer = new Completer();
     _firebase
       .ptr.createUser(credentials['email'], credentials['password'])
-      .then((mojo.FirebaseCreateUserResponseParams response) {
+      .then((mojom.FirebaseCreateUserResponseParams response) {
         if (response.error != null) {
           completer.completeError(response.error);
         } else {
@@ -237,17 +237,17 @@ class FlutterFirebase extends MojoQuery implements Firebase {
   }
 }
 
-class _ValueEventListener implements mojo.ValueEventListener {
+class _ValueEventListener implements mojom.ValueEventListener {
   StreamController<Event> _controller;
   _ValueEventListener(this._controller);
 
-  void onCancelled(mojo.Error error) {
+  void onCancelled(mojom.Error error) {
     print("ValueEventListener onCancelled: ${error}");
     _controller.close();
   }
 
-  void onDataChange(mojo.DataSnapshot snapshot) {
-    Event event = new Event(new MojoDataSnapshot.fromMojoObject(snapshot), null);
+  void onDataChange(mojom.DataSnapshot snapshot) {
+    Event event = new Event(new FlutterDataSnapshot.fromMojoObject(snapshot), null);
     _controller.add(event);
   }
 }
@@ -255,72 +255,72 @@ class _ValueEventListener implements mojo.ValueEventListener {
 class _ChildEvent extends Event {
   _ChildEvent(this.eventType, DataSnapshot snapshot, [ String prevChild ])
     : super(snapshot, prevChild);
-  final mojo.EventType eventType;
+  final mojom.EventType eventType;
 }
 
-class _ChildEventListener implements mojo.ChildEventListener {
+class _ChildEventListener implements mojom.ChildEventListener {
   final StreamController<Event> _controller;
   _ChildEventListener(this._controller);
 
-  void onCancelled(mojo.Error error) {
+  void onCancelled(mojom.Error error) {
     print("ChildEventListener onCancelled: ${error}");
     _controller.close();
   }
 
-  void onChildAdded(mojo.DataSnapshot snapshot, String prevSiblingKey) {
+  void onChildAdded(mojom.DataSnapshot snapshot, String prevSiblingKey) {
     _ChildEvent event = new _ChildEvent(
-      mojo.EventType.eventTypeChildAdded,
-      new MojoDataSnapshot.fromMojoObject(snapshot),
+      mojom.EventType.eventTypeChildAdded,
+      new FlutterDataSnapshot.fromMojoObject(snapshot),
       prevSiblingKey
     );
     _controller.add(event);
   }
 
-  void onChildMoved(mojo.DataSnapshot snapshot, String prevSiblingKey) {
+  void onChildMoved(mojom.DataSnapshot snapshot, String prevSiblingKey) {
     _ChildEvent event = new _ChildEvent(
-      mojo.EventType.eventTypeChildMoved,
-      new MojoDataSnapshot.fromMojoObject(snapshot),
+      mojom.EventType.eventTypeChildMoved,
+      new FlutterDataSnapshot.fromMojoObject(snapshot),
       prevSiblingKey
     );
     _controller.add(event);
   }
 
-  void onChildChanged(mojo.DataSnapshot snapshot, String prevSiblingKey) {
+  void onChildChanged(mojom.DataSnapshot snapshot, String prevSiblingKey) {
     _ChildEvent event = new _ChildEvent(
-      mojo.EventType.eventTypeChildChanged,
-      new MojoDataSnapshot.fromMojoObject(snapshot),
+      mojom.EventType.eventTypeChildChanged,
+      new FlutterDataSnapshot.fromMojoObject(snapshot),
       prevSiblingKey
     );
     _controller.add(event);
   }
 
-  void onChildRemoved(mojo.DataSnapshot snapshot) {
+  void onChildRemoved(mojom.DataSnapshot snapshot) {
     _ChildEvent event = new _ChildEvent(
-      mojo.EventType.eventTypeChildRemoved,
-      new MojoDataSnapshot.fromMojoObject(snapshot)
+      mojom.EventType.eventTypeChildRemoved,
+      new FlutterDataSnapshot.fromMojoObject(snapshot)
     );
     _controller.add(event);
   }
 }
 
-class _FlutterQuery implements Query {
-  mojo.FirebaseProxy _firebase;
+class FlutterQuery implements Query {
+  mojom.FirebaseProxy _firebase;
 
-  _FlutterQuery(String url) : _firebase = new mojo.FirebaseProxy.unbound() {
+  FlutterQuery(String url) : _firebase = new mojom.FirebaseProxy.unbound() {
     shell.connectToService("firebase::Firebase", _firebase);
     _firebase.ptr.initWithUrl(url);
   }
 
-  _FlutterQuery._withProxy(mojo.FirebaseProxy firebase) : _firebase = firebase;
+  FlutterQuery._withProxy(mojom.FirebaseProxy firebase) : _firebase = firebase;
 
   Stream<Event> _onValue;
   Stream<Event> get onValue {
     if (_onValue == null) {
-      mojo.ValueEventListener listener;
-      mojo.ValueEventListenerStub stub;
+      mojom.ValueEventListener listener;
+      mojom.ValueEventListenerStub stub;
       StreamController<Event> controller = new StreamController<Event>.broadcast(
         onListen: () {
-          stub = new mojo.ValueEventListenerStub.unbound()..impl = listener;
+          stub = new mojom.ValueEventListenerStub.unbound()..impl = listener;
           _firebase.ptr.addValueEventListener(stub);
         },
         onCancel: () => stub.close(),
@@ -333,13 +333,13 @@ class _FlutterQuery implements Query {
   }
 
   Stream<Event> _onChildEvent;
-  Stream<Event> _on(mojo.EventType eventType) {
+  Stream<Event> _on(mojom.EventType eventType) {
     if (_onChildEvent == null) {
-      mojo.ChildEventListener listener;
-      mojo.ChildEventListenerStub stub;
+      mojom.ChildEventListener listener;
+      mojom.ChildEventListenerStub stub;
       StreamController<Event> controller = new StreamController<Event>.broadcast(
         onListen: () {
-          stub = new mojo.ChildEventListenerStub.unbound()
+          stub = new mojom.ChildEventListenerStub.unbound()
             ..impl = listener;
           _firebase.ptr.addChildEventListener(stub);
         },
@@ -352,40 +352,40 @@ class _FlutterQuery implements Query {
     return _onChildEvent.where((_ChildEvent event) => event.eventType == eventType);
   }
 
-  Stream<Event> get onChildAdded => _on(mojo.EventType.eventTypeChildAdded);
-  Stream<Event> get onChildMoved => _on(mojo.EventType.eventTypeChildMoved);
-  Stream<Event> get onChildChanged => _on(mojo.EventType.eventTypeChildChanged);
-  Stream<Event> get onChildRemoved => _on(mojo.EventType.eventTypeChildRemoved);
+  Stream<Event> get onChildAdded => _on(mojom.EventType.eventTypeChildAdded);
+  Stream<Event> get onChildMoved => _on(mojom.EventType.eventTypeChildMoved);
+  Stream<Event> get onChildChanged => _on(mojom.EventType.eventTypeChildChanged);
+  Stream<Event> get onChildRemoved => _on(mojom.EventType.eventTypeChildRemoved);
 
   /**
    * Listens for exactly one event of the specified event type, and then stops
    * listening.
    */
   Future<DataSnapshot> once(String eventType) async {
-    mojo.EventType mojoEventType;
+    mojom.EventType mojoEventType;
     switch(eventType) {
       case "value":
-        mojoEventType = mojo.EventType.eventTypeValue;
+        mojoEventType = mojom.EventType.eventTypeValue;
         break;
       case "child_added":
-        mojoEventType = mojo.EventType.eventTypeChildAdded;
+        mojoEventType = mojom.EventType.eventTypeChildAdded;
         break;
       case "child_changed":
-        mojoEventType = mojo.EventType.eventTypeChildChanged;
+        mojoEventType = mojom.EventType.eventTypeChildChanged;
         break;
       case "child_removed":
-        mojoEventType = mojo.EventType.eventTypeChildRemoved;
+        mojoEventType = mojom.EventType.eventTypeChildRemoved;
         break;
       case "child_moved":
-        mojoEventType = mojo.EventType.eventTypeChildMoved;
+        mojoEventType = mojom.EventType.eventTypeChildMoved;
         break;
       default:
         assert(false);
         return null;
     }
-    mojo.DataSnapshot result =
+    mojom.DataSnapshot result =
       (await _firebase.ptr.observeSingleEventOfType(mojoEventType)).snapshot;
-    return new MojoDataSnapshot.fromMojoObject(result);
+    return new FlutterDataSnapshot.fromMojoObject(result);
   }
 
   /**
