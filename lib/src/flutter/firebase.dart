@@ -15,13 +15,13 @@ import '../transaction_result.dart';
 import 'auth_response.dart';
 import 'data_snapshot.dart';
 
-Firebase createFirebase(String url) => new MojoFirebase(url);
+Firebase createFirebase(String url) => new FlutterFirebase(url);
 final serverValue = null;
 
-class MojoFirebase extends MojoQuery implements Firebase {
-  MojoFirebase(String url) : _path = <String>[], super(url);
+class FlutterFirebase extends MojoQuery implements Firebase {
+  FlutterFirebase(String url) : _path = <String>[], super(url);
 
-  MojoFirebase._withProxy(mojo.FirebaseProxy firebase, this._path)
+  FlutterFirebase._withProxy(mojo.FirebaseProxy firebase, this._path)
     : super._withProxy(firebase);
 
   // We have to keep track of our full path because we might be asked to provide
@@ -125,7 +125,7 @@ class MojoFirebase extends MojoQuery implements Firebase {
   Firebase root() {
     mojo.FirebaseProxy proxy = new mojo.FirebaseProxy.unbound();
     _firebase.ptr.getRoot(proxy);
-    return new MojoFirebase._withProxy(proxy, <String>[]);
+    return new FlutterFirebase._withProxy(proxy, <String>[]);
   }
 
   String get key {
@@ -150,7 +150,7 @@ class MojoFirebase extends MojoQuery implements Firebase {
 
   Firebase push({value, onComplete}) {
     mojo.FirebaseProxy proxy = new mojo.FirebaseProxy.unbound();
-    MojoFirebase child = new MojoFirebase._withProxy(proxy, null);
+    FlutterFirebase child = new FlutterFirebase._withProxy(proxy, null);
     Future<String> getKey = _firebase.ptr.push(proxy);
     Future<mojo.Error> setValue = child.set(value);
     Future.wait([getKey, setValue])
@@ -303,15 +303,15 @@ class _ChildEventListener implements mojo.ChildEventListener {
   }
 }
 
-class MojoQuery implements Query {
+class _FlutterQuery implements Query {
   mojo.FirebaseProxy _firebase;
 
-  MojoQuery(String url) : _firebase = new mojo.FirebaseProxy.unbound() {
+  _FlutterQuery(String url) : _firebase = new mojo.FirebaseProxy.unbound() {
     shell.connectToService("firebase::Firebase", _firebase);
     _firebase.ptr.initWithUrl(url);
   }
 
-  MojoQuery._withProxy(mojo.FirebaseProxy firebase) : _firebase = firebase;
+  _FlutterQuery._withProxy(mojo.FirebaseProxy firebase) : _firebase = firebase;
 
   Stream<Event> _onValue;
   Stream<Event> get onValue {

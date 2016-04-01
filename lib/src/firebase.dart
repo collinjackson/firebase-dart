@@ -9,7 +9,7 @@ import 'transaction_result.dart';
 
 import 'firebase_factory.dart'
   if (dart.library.js) 'js/firebase.dart'
-  if (dart.library.ui) 'mojo/firebase.dart';
+  if (dart.library.ui) 'flutter/firebase.dart';
 
 /**
  * A Firebase represents a particular location in your Firebase and can be used
