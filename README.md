@@ -1,31 +1,52 @@
-[![Build Status](https://travis-ci.org/firebase/firebase-dart.svg?branch=master)](https://travis-ci.org/firebase/firebase-dart)
+# Firebase for Flutter
 
-A Dart wrapper for [Firebase](https://www.firebase.com).
+_This library is a work in progress, and is not officially supported
+by the Firebase team._
 
-This package contains two implementations of the same ```Firebase``` Dart API:
-* The ```JsFirebase``` implementation uses `dart:js` to wrap functionality provided by `firebase.js`
-in Dart classes. You'll need this implementation to build Firebase apps for the web.
-* The ```FlutterFirebase``` implementation uses [Flutter](https://github.com/domokit/mojo) to wrap functionality provided by Firebase iOS and Android SDKs. You'll need this implementation to build Firebase apps with [Flutter](http:/flutter.io).
+This package exposes the [Firebase SDK](https://firebase.google.com/docs/)
+to Flutter, on both iOS and Android. 
+(Looking for Firebase v1 wrappers for Dart for the web? Check out the original [firebase-dart](https://github.com/firebase/firebase-dart).)
 
-Right now the ```FlutterFirebase``` implementation is default, but you can change this in lib/src/firebase.dart. Once [dart-lang/sdk#24581](https://github.com/dart-lang/sdk/issues/24581) is fixed you'll get the right implementation automatically.
+## Status
 
-#### Installing
+This package currently provides an in-progress implementation of the 
+Realtime Database and Authentication APIs used by the Firechat codelab.
+This package does not yet support transactions and querying.
 
-Follow the instructions on the [pub page](http://pub.dartlang.org/packages/firebase#installing).
+Support for more APIs is planned.
+See the [API docs](https://flutter.github.io/firebase) for
+a list of currently supported APIs.
 
-#### Using Firebase on the web
+## Learn more
 
-**The firebase.js library MUST be included for the JavaScript wrapper to work**:
+Check out our [API docs](https://flutter.github.io/firebase), 
+[codelab](https://codelabs.developers.google.com/codelabs/flutter/), and
+[example app](https://github.com/flutter/firechat-flutter/).
 
-```html
-<script src="https://cdn.firebase.com/js/client/2.3.2/firebase.js"></script>
+Here are some snippets to give you a flavor of the API:
+
+```dart
+// Import the Firebase library:
+import 'package:firebase/firebase.dart';
+
+// Get a reference to the database object:
+var database = FirebaseDatabase.instance.reference();
+
+// Append a message to the end of an array in Firebase Database:
+var message = {
+  'text': value.text,
+};
+database.push().set(message);
+
+// Listen for newly added messages:
+database.onChildAdded.listen((Event event) {
+  // Do cool stuff.
+});
 ```
 
-### Building generated files from source
+## Contributing
 
-Files in the lib/generated folder require a Flutter engine to build.
-
-Clone this repository into your Flutter engine repository's ```third_party/firebase``` directory.
+If you want to modify or improve this package, you'll have to build from source.
 
 To get the Firebase SDK, create a new iOS project and run ```pod init```.
 Add the following to your Podfile:
@@ -66,3 +87,7 @@ cp out/android_debug/gen/third_party/firebase/mojom/firebase.mojom.dart third_pa
 (cd third_party/firebase/android && ./gradlew build)
 cp -r third_party/firebase/android/mojo/build/intermediates/ third_party/firebase/lib/generated/android/ 2>&1 | grep -v 'Permission denied'
 ```
+
+## License
+
+See the [LICENSE file](https://github.com/flutter/firebase/blob/master/LICENSE).
