@@ -27,13 +27,31 @@ Files in the lib/generated folder require a Flutter engine to build.
 
 Clone this repository into your Flutter engine repository's ```third_party/firebase``` directory.
 
+To get the Firebase SDK, create a new iOS project and run ```pod init```.
+Add the following to your Podfile:
+
+```
+target 'YOUR_PROJECT_NAME' do
+pod 'Firebase'
+pod 'FirebaseAuth'
+pod 'FirebaseDatabase'
+pod 'FirebaseStorage'
+pod 'GoogleMobileAds'
+pod 'FirebaseRemoteConfig'
+pod 'Firebase/Crash'
+end
+```
+
+Run ```pod install``` to download the Firebase SDK into the Pods directory.
+Copy the contents of the Pods directory to the ```sdk/ios``` directory in this repository.
+
 To build for iOS:
 ```
 ./sky/tools/gn --ios --simulator --enable-firebase
 ninja -C out/ios_debug_sim/ third_party/firebase
 ./sky/tools/gn --ios --enable-firebase --runtime-mode release
 ninja -C out/ios_release/ third_party/firebase
-lipo out/ios_debug_sim/libFirebase.dylib out/ios_release/libFirebase.dylib -create -output third_party/firebase/lib/generated/ios/libFirebase.dylib 
+lipo out/ios_debug_sim/libFirebase.dylib out/ios_release/libFirebase.dylib -create -output third_party/firebase/lib/generated/ios/libFirebase.dylib
 cp out/ios_debug_sim/gen/third_party/firebase/mojom/firebase.mojom.dart third_party/firebase/lib/generated
 ```
 
